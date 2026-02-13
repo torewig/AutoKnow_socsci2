@@ -2,7 +2,7 @@
 # Datacreation2.R
 # Load country-year averaged data and map V-DEM codes to country names
 # ============================================================================
-
+rm(list = ls())
 # Load required packages (install if missing)
 if (!requireNamespace("countrycode", quietly = TRUE)) install.packages("countrycode")
 library(countrycode)
@@ -77,14 +77,15 @@ cat("\nV-DEM dataset loaded from", vdem_path, "\n")
 cat("Dimensions:", nrow(vdem), "rows,", ncol(vdem), "columns\n")
 
 # Check for required columns
-if (!all(c("country_id", "year", "v2x_polyarchy") %in% names(vdem))) {
-  missing_cols <- setdiff(c("country_id", "year", "v2x_polyarchy"), names(vdem))
+required_vdem_cols <- c("country_id", "year", "v2x_polyarchy", "e_gdppc", "v2x_regime", "e_pop")
+if (!all(required_vdem_cols %in% names(vdem))) {
+  missing_cols <- setdiff(required_vdem_cols, names(vdem))
   stop(paste("Required V-DEM columns not found:", paste(missing_cols, collapse = ", ")))
 }
 
-# Subset V-DEM to keep only country_id, year, and v2x_polyarchy
-vdem_subset <- vdem[, c("country_id", "year", "v2x_polyarchy")]
-cat("V-DEM subset: kept columns country_id, year, v2x_polyarchy\n")
+# Subset V-DEM to keep only the required columns
+vdem_subset <- vdem[, required_vdem_cols]
+cat("V-DEM subset: kept columns ", paste(required_vdem_cols, collapse=", "), "\n")
 cat("V-DEM subset dimensions:", nrow(vdem_subset), "rows\n\n")
 
 # Merge cy with vdem_subset on vdem_code (from cy) and country_id (from vdem)
@@ -101,12 +102,17 @@ cat("  Rows with v2x_polyarchy data:", sum(!is.na(cy_merged$v2x_polyarchy)), "\n
 cat("  Rows missing v2x_polyarchy:", sum(is.na(cy_merged$v2x_polyarchy)), "\n\n")
 
 # Show sample of merged data
-cat("Sample of merged data (first 10 rows with v2x_polyarchy):\n")
-sample_rows <- head(cy_merged[, c("country", "year", "vdem_code", "cssmean", "v2x_polyarchy")], 10)
+cat("Sample of merged data (first 10 rows with V-DEM variables):\n")
+sample_rows <- head(cy_merged[, c("country", "year", "vdem_code", "cssmean", "v2x_polyarchy", "e_gdppc", "v2x_regime", "e_pop")], 10)
 print(sample_rows)
 cat("\n")
 
-# Summary statistics for v2x_polyarchy
-cat("Summary statistics for v2x_polyarchy:\n")
-print(summary(cy_merged$v2x_polyarchy))
+# Summary statistics for V-DEM variables
+cat("Summary statistics for v2x_polyarchy, e_gdppc, v2x_regime, e_pop:\n")
+print(summary(cy_merged[, c("v2x_polyarchy", "e_gdppc", "v2x_regime", "e_pop")]))
+
+# --- Save final merged data as R dataset ---
+final_rds_path <- "Data/cy_merged_final.rds"
+saveRDS(cy_merged, final_rds_path)
+cat("Final merged data saved as:", final_rds_path, "\n")
 
