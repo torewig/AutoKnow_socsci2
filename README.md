@@ -16,7 +16,7 @@ All data files live in the `Data/` folder:
 
 ## Analysis Pipeline
 
-The pipeline consists of five scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
+The pipeline consists of six scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
 
 ### Step 1: Load and Map V-DEM Codes (`Step1_LoadAndMap.R`)
 
@@ -83,12 +83,42 @@ Estimates two-way fixed effects (country + year) regressions using `fixest::feol
 
 LaTeX-ready tables are saved to `Tables/TWFE_Polyarchy.tex` and `Tables/TWFE_Autocracy.tex`.
 
+### Step 6: Descriptive Figures and Tables (`Step6_Descriptives.R`)
+
+Generates a set of figures and LaTeX tables exploring the relationship between political regime characteristics and social science output.
+
+**Figures** (saved to `Figures/`):
+
+| Figure | Description |
+|--------|-------------|
+| `fig1_polyarchy_cssmean_scatter.png` | Scatter plot of polyarchy vs CSSmean with LOESS smoother. |
+| `fig2_cssmean_by_regime_boxplot.png` | Box plots of CSSmean by V-DEM regime type. |
+| `fig3_cssmean_by_regime_violin.png` | Violin plots of CSSmean by regime type with quartile lines. |
+| `fig4_binned_polyarchy_cssmean.png` | Binned scatter: mean CSSmean by polyarchy decile with 95% CIs. |
+| `fig5_cssmean_trends_by_regime.png` | Time series of mean CSSmean by regime type (1990--2019). |
+| `fig6_polyarchy_cssmean_by_regime.png` | Scatter of polyarchy vs CSSmean, colored by regime type with separate linear fits. |
+| `fig7_heatmap_polyarchy_decade.png` | Heatmap of mean CSSmean by polyarchy quartile and decade. |
+
+**Tables** (saved to `Tables/`):
+
+| Table | Description |
+|-------|-------------|
+| `Desc_Regime.tex` | Descriptive statistics (N, countries, mean, SD, min, median, max) by regime type. |
+| `Desc_Polyarchy_Quartile.tex` | Descriptive statistics by polyarchy quartile, including share classified as autocracy. |
+| `Correlation_Matrix.tex` | Pairwise correlation matrix for CSSmean, polyarchy, GDP, population, and autocracy. |
+
 ## Output
+
+All output files from Steps 5 and 6:
 
 | File | Description |
 |------|-------------|
 | `Tables/TWFE_Polyarchy.tex` | LaTeX table: TWFE models with polyarchy as treatment (lags 2, 3, 4). |
 | `Tables/TWFE_Autocracy.tex` | LaTeX table: TWFE models with binary autocracy as treatment (lags 2, 3, 4). |
+| `Tables/Desc_Regime.tex` | LaTeX table: CSSmean descriptive statistics by regime type. |
+| `Tables/Desc_Polyarchy_Quartile.tex` | LaTeX table: CSSmean descriptive statistics by polyarchy quartile. |
+| `Tables/Correlation_Matrix.tex` | LaTeX table: pairwise correlation matrix. |
+| `Figures/fig1-fig7` | PNG figures (see Step 6 above for descriptions). |
 
 ## Exploratory Scripts
 
@@ -97,4 +127,4 @@ Earlier data-creation scripts and additional exploratory analyses (synthetic con
 ## Requirements
 
 - R (tested with 4.5.1)
-- R packages: `countrycode`, `dplyr`, `fixest`
+- R packages: `countrycode`, `dplyr`, `fixest`, `ggplot2`, `tidyr`, `scales`
