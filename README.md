@@ -16,7 +16,7 @@ All data files live in the `Data/` folder:
 
 ## Analysis Pipeline
 
-The pipeline consists of six scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
+The pipeline consists of seven scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
 
 ### Step 1: Load and Map V-DEM Codes (`Step1_LoadAndMap.R`)
 
@@ -107,9 +107,40 @@ Generates a set of figures and LaTeX tables exploring the relationship between p
 | `Desc_Polyarchy_Quartile.tex` | Descriptive statistics by polyarchy quartile, including share classified as autocracy. |
 | `Correlation_Matrix.tex` | Pairwise correlation matrix for CSSmean, polyarchy, GDP, population, and autocracy. |
 
+### Step 7: Synthetic Control Analysis (`Step7_SynthControl.R`)
+
+Identifies countries that transitioned to autocracy with sufficient pre- and post-treatment data, then runs synthetic control analysis using the `Synth` package.
+
+**Part 1 -- Candidate identification:**
+- Detects all transitions where `autocracy` changes from 0 to 1.
+- Filters for cases with at least 4 pre-treatment and 3 post-treatment years of non-missing `cssmean`.
+- Keeps the first transition per country. Found 21 candidates.
+
+**Part 2 -- Synthetic control estimation:**
+- Donor pool: 58 countries that remain democratic throughout the panel.
+- Requires donors and treated unit to have complete pre-period `cssmean`.
+- 5 cases completed successfully:
+
+| Country | Treatment year | Pre-period years | Pre-RMSPE | Top donor |
+|---------|---------------|-----------------|-----------|-----------|
+| India | 2017 | 15 | 2.82 | Japan (0.58) |
+| Kenya | 2007 | 15 | 4.54 | Barbados (0.57) |
+| Philippines | 2004 | 13 | 5.67 | Barbados (0.36) |
+| Thailand | 2006 | 15 | 5.92 | Barbados (0.31) |
+| Turkey | 2013 | 15 | 1.88 | Japan (0.37) |
+
+**Part 3 -- Figures** (saved to `Figures/`):
+
+| Figure | Description |
+|--------|-------------|
+| `fig_synth_[country].png` | Individual actual vs synthetic CSSmean plots (5 countries). |
+| `fig_synth_gaps_all.png` | Overlay of gap (actual - synthetic) for all cases. |
+| `fig_synth_avg_gap.png` | Average gap across all cases with 95% CI. |
+| `fig_synth_facet_all.png` | Faceted panel showing all 5 cases side by side. |
+
 ## Output
 
-All output files from Steps 5 and 6:
+All output files from Steps 5, 6, and 7:
 
 | File | Description |
 |------|-------------|
@@ -118,7 +149,8 @@ All output files from Steps 5 and 6:
 | `Tables/Desc_Regime.tex` | LaTeX table: CSSmean descriptive statistics by regime type. |
 | `Tables/Desc_Polyarchy_Quartile.tex` | LaTeX table: CSSmean descriptive statistics by polyarchy quartile. |
 | `Tables/Correlation_Matrix.tex` | LaTeX table: pairwise correlation matrix. |
-| `Figures/fig1-fig7` | PNG figures (see Step 6 above for descriptions). |
+| `Figures/fig1-fig7` | PNG figures from Step 6 (see above for descriptions). |
+| `Figures/fig_synth_*.png` | Synthetic control figures from Step 7 (5 country plots + 3 summary plots). |
 
 ## Exploratory Scripts
 
@@ -127,4 +159,4 @@ Earlier data-creation scripts and additional exploratory analyses (synthetic con
 ## Requirements
 
 - R (tested with 4.5.1)
-- R packages: `countrycode`, `dplyr`, `fixest`, `ggplot2`, `tidyr`, `scales`
+- R packages: `countrycode`, `dplyr`, `fixest`, `ggplot2`, `tidyr`, `scales`, `Synth`
