@@ -16,7 +16,7 @@ All data files live in the `Data/` folder:
 
 ## Analysis Pipeline
 
-The pipeline consists of seven scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
+The pipeline consists of eight scripts, designed to be run in order. All scripts should be executed from the repository root (the parent of `Data/`).
 
 ### Step 1: Load and Map V-DEM Codes (`Step1_LoadAndMap.R`)
 
@@ -138,9 +138,43 @@ Identifies countries that transitioned to autocracy with sufficient pre- and pos
 | `fig_synth_avg_gap.png` | Average gap across all cases with 95% CI. |
 | `fig_synth_facet_all.png` | Faceted panel showing all 5 cases side by side. |
 
+### Step 8: Panel Matching (`Step8_PanelMatch.R`)
+
+Estimates the average treatment effect on the treated (ATT) of autocracy on CSSmean using the `PanelMatch` package (v3 API) with Mahalanobis refinement on log GDP per capita and log population.
+
+**Part 1 -- Data preparation:**
+- Filters to 40 countries with consecutive year observations (847 country-years).
+- Creates a `PanelData` object (PanelMatch v3 API) with unit, time, treatment, and outcome identifiers.
+- 281 autocracy observations, 566 democracy observations.
+
+**Part 2 -- ATT estimation:**
+Three specifications with matching lags of 1, 2, and 3 years, each estimating effects at leads 0--5 (years after treatment onset). Bootstrap standard errors with 1,000 iterations.
+
+| Specification | t+0 | t+2 | Placebo passes? |
+|---|---|---|---|
+| Lag 1 | 0.69 (n.s.) | 1.59 (n.s.) | -- |
+| Lag 2 | -3.34\* | -3.68\* | Yes (CI includes zero) |
+| Lag 3 | -3.24\* | -3.68\* | Yes |
+
+The preferred specification (lag 2) shows a statistically significant negative effect of autocracy on social science output at t+0 and t+2, with the 95% bootstrap CI excluding zero.
+
+**Part 3 -- Placebo test:**
+- Pre-treatment placebo estimate: -2.71, 95% CI [-8.36, 2.94].
+- The CI includes zero, supporting the parallel trends assumption.
+
+**Part 4 -- Figures** (saved to `Figures/`):
+
+| Figure | Description |
+|--------|-------------|
+| `fig_panelmatch_att.png` | ATT for all three lag specifications with 95% CIs. |
+| `fig_panelmatch_att_lag2.png` | Preferred specification (lag 2) with CI ribbon. |
+| `fig_panelmatch_prepost.png` | Pre-treatment placebo and post-treatment ATT on a single timeline. |
+
+**Part 5 -- LaTeX table:** `Tables/PanelMatch_ATT.tex` -- ATT estimates for all three specifications with 95% bootstrap CIs.
+
 ## Output
 
-All output files from Steps 5, 6, and 7:
+All output files from Steps 5, 6, 7, and 8:
 
 | File | Description |
 |------|-------------|
@@ -151,6 +185,10 @@ All output files from Steps 5, 6, and 7:
 | `Tables/Correlation_Matrix.tex` | LaTeX table: pairwise correlation matrix. |
 | `Figures/fig1-fig7` | PNG figures from Step 6 (see above for descriptions). |
 | `Figures/fig_synth_*.png` | Synthetic control figures from Step 7 (5 country plots + 3 summary plots). |
+| `Tables/PanelMatch_ATT.tex` | LaTeX table: PanelMatch ATT estimates for lags 1, 2, 3 with bootstrap CIs. |
+| `Figures/fig_panelmatch_att.png` | PanelMatch ATT for all three lag specifications. |
+| `Figures/fig_panelmatch_att_lag2.png` | PanelMatch preferred specification (lag 2) with CI ribbon. |
+| `Figures/fig_panelmatch_prepost.png` | PanelMatch pre-treatment placebo and post-treatment ATT. |
 
 ## Exploratory Scripts
 
@@ -159,4 +197,4 @@ Earlier data-creation scripts and additional exploratory analyses (synthetic con
 ## Requirements
 
 - R (tested with 4.5.1)
-- R packages: `countrycode`, `dplyr`, `fixest`, `ggplot2`, `tidyr`, `scales`, `Synth`
+- R packages: `countrycode`, `dplyr`, `fixest`, `ggplot2`, `tidyr`, `scales`, `Synth`, `PanelMatch`
